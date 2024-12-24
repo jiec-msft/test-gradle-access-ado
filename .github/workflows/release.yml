@@ -57,4 +57,4 @@ jobs:
         shell: bash
 
       - name: Install dependencies
-        run: ./gradlew clean build --info
+        run: pwd && ./gradlew build --debug
