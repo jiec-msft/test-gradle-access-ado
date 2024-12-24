@@ -6,6 +6,8 @@ group = "org.example"
 version = "1.0-SNAPSHOT"
 
 repositories {
+    mavenCentral()
+
     maven {
         url = uri("https://pkgs.dev.azure.com/jiec-temp-org/Tooling/_packaging/mason-test-feed-in-personal-org/maven/v1")
         credentials  {
@@ -16,6 +18,8 @@ repositories {
 }
 
 dependencies {
+    implementation("com.github.copilot:copilot-plugin-telemetry:0.0.3")
+
     // lombok
     compileOnly("org.projectlombok:lombok:1.18.36")
     annotationProcessor("org.projectlombok:lombok:1.18.36")
