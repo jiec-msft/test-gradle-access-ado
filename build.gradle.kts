@@ -11,7 +11,7 @@ repositories {
     maven {
         url = uri("https://pkgs.dev.azure.com/jiec-temp-org/Tooling/_packaging/mason-test-feed-in-personal-org/maven/v1")
         credentials  {
-            username = ""
+            username = "jiec-temp-org"
             password = project.findProperty("ado.artifacts.jiec-temp-org.mason-test-feed-in-personal-org.token") as String
         }
     }
