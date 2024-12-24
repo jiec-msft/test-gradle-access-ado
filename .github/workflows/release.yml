@@ -52,5 +52,9 @@ jobs:
           
           cat $PROPERTIES_FILE
 
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+        shell: bash
+
       - name: Install dependencies
         run: ./gradlew clean build --info
