@@ -1,0 +1,54 @@
+name: Release
+
+on:
+  schedule:
+    - cron: '0 12 * * *' # Run every day at 12:00 UTC (20:00 UTC+8)
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.1.7
+
+      - name: 'Az CLI login'
+        uses: azure/login@v2
+        with:
+          ## below ids can be stored as secrets.
+          client-id: c21c18b2-9047-4a39-a7af-216a1210f7e9
+          tenant-id: 72f988bf-86f1-41af-91ab-2d7cd011db47 # MSFT tenant
+          allow-no-subscriptions: true
+
+      # Get access token with short expiration time
+      - name: Authenticate with Azure Artifacts
+        shell: bash
+        run: |
+          token=$(az account get-access-token --query accessToken -o tsv)
+          
+          # Define the directory and file path
+          GRADLE_DIR="$HOME/.gradle"
+          PROPERTIES_FILE="$GRADLE_DIR/gradle.properties"
+          
+          # Check if the .gradle directory exists, if not, create it
+          if [ ! -d "$GRADLE_DIR" ]; then
+            mkdir -p "$GRADLE_DIR"
+          fi
+          
+          # Check if the gradle.properties file exists, if not, create it
+          if [ ! -f "$PROPERTIES_FILE" ]; then
+            touch "$PROPERTIES_FILE"
+            echo "Created $PROPERTIES_FILE"
+          else
+            echo "$PROPERTIES_FILE already exists"
+          fi
+  
+          cat $PROPERTIES_FILE
+          
+          echo "ado.artifacts.jiec-temp-org.mason-test-feed-in-personal-org.token=$token" >> $PROPERTIES_FILE 
+          
+          cat $PROPERTIES_FILE
+
+      - name: Install dependencies
+        run: ./gradlew clean build --info
