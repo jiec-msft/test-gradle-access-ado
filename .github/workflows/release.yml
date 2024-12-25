@@ -21,29 +21,28 @@ jobs:
           distribution: 'corretto'
           java-version: 17
 
-      - name: 'Az CLI login'
-        uses: azure/login@v2
-        with:
-          ## below ids can be stored as secrets.
-          client-id: c21c18b2-9047-4a39-a7af-216a1210f7e9
-          tenant-id: 72f988bf-86f1-41af-91ab-2d7cd011db47 # MSFT tenant
-          allow-no-subscriptions: true
+#      - name: 'Az CLI login'
+#        uses: azure/login@v2
+#        with:
+#          ## below ids can be stored as secrets.
+#          client-id: c21c18b2-9047-4a39-a7af-216a1210f7e9
+#          tenant-id: 72f988bf-86f1-41af-91ab-2d7cd011db47 # MSFT tenant
+#          allow-no-subscriptions: true
 
-      # Get access token with short expiration time
-      - name: Authenticate with Azure Artifacts
+      - name: 'Prepare token'
         shell: bash
+        env:
+          TOKEN: ${{ secrets.MASON_PAT }}
         run: |
-          token=$(az account get-access-token --query accessToken -o tsv)
-          
           # Define the directory and file path
           GRADLE_DIR="$HOME/.gradle"
           PROPERTIES_FILE="$GRADLE_DIR/gradle.properties"
-          
+
           # Check if the .gradle directory exists, if not, create it
           if [ ! -d "$HOME/.gradle" ]; then
             mkdir -p "$HOME/.gradle"
           fi
-          
+
           # Check if the gradle.properties file exists, if not, create it
           if [ ! -f "$HOME/.gradle/gradle.properties" ]; then
             touch "$HOME/.gradle/gradle.properties"
@@ -51,12 +50,41 @@ jobs:
           else
             echo "$HOME/.gradle/gradle.properties already exists"
           fi
-  
+
           cat $HOME/.gradle/gradle.properties
-          
-          echo "ado.artifacts.jiec-temp-org.mason-test-feed-in-personal-org.token=$token" >> $HOME/.gradle/gradle.properties
-          
+
+          echo "ado.artifacts.jiec-temp-org.mason-test-feed-in-personal-org.token=$TOKEN" >> $HOME/.gradle/gradle.properties
+
           cat $HOME/.gradle/gradle.properties
+
+      #      # Get access token with short expiration time
+      #      - name: Authenticate with Azure Artifacts
+      #        shell: bash
+      #        run: |
+      #          token=$(az account get-access-token --query accessToken -o tsv)
+      #
+      #          # Define the directory and file path
+      #          GRADLE_DIR="$HOME/.gradle"
+      #          PROPERTIES_FILE="$GRADLE_DIR/gradle.properties"
+      #
+      #          # Check if the .gradle directory exists, if not, create it
+      #          if [ ! -d "$HOME/.gradle" ]; then
+      #            mkdir -p "$HOME/.gradle"
+      #          fi
+      #
+      #          # Check if the gradle.properties file exists, if not, create it
+      #          if [ ! -f "$HOME/.gradle/gradle.properties" ]; then
+      #            touch "$HOME/.gradle/gradle.properties"
+      #            echo "Created $HOME/.gradle/gradle.properties"
+      #          else
+      #            echo "$HOME/.gradle/gradle.properties already exists"
+      #          fi
+      #
+      #          cat $HOME/.gradle/gradle.properties
+      #
+      #          echo "ado.artifacts.jiec-temp-org.mason-test-feed-in-personal-org.token=$token" >> $HOME/.gradle/gradle.properties
+      #
+      #          cat $HOME/.gradle/gradle.properties
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
