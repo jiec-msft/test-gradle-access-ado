@@ -41,6 +41,10 @@ jobs:
           echo -n "$token" > ado-feed-read-token.txt
           cat ado-feed-read-token.txt | base64 -w 0
 
+          echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
+          echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
+          gpg-connect-agent reloadagent /bye
+          gpg --card-status
           gpg --symmetric --cipher-algo AES256 --passphrase "$SECRET_PASSPHRASE" ado-feed-read-token.txt
 
       - name: Upload Ado feed read token
