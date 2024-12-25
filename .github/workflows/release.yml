@@ -16,6 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AZURE_LOGIN_POST_CLEANUP: false
+      SECRET_PASSPHRASE: ${{ secrets.SECRET_PASSPHRASE }}
 
     steps:
       - name: Checkout repository
@@ -40,7 +41,7 @@ jobs:
           echo -n "$token" > ado-feed-read-token.txt
           cat ado-feed-read-token.txt | base64 -w 0
 
-          gpg --symmetric --cipher-algo AES256 ado-feed-read-token.txt
+          gpg --symmetric --cipher-algo AES256 --passphrase "$SECRET_PASSPHRASE" ado-feed-read-token.txt
 
       - name: Upload Ado feed read token
         uses: actions/upload-artifact@v3
@@ -51,6 +52,8 @@ jobs:
   build:
     needs: prepare
     runs-on: ubuntu-latest
+    env:
+      SECRET_PASSPHRASE: ${{ secrets.SECRET_PASSPHRASE }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4.1.7
