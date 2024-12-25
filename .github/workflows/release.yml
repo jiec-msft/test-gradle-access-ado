@@ -4,13 +4,54 @@ on:
   schedule:
     - cron: '0 12 * * *' # Run every day at 12:00 UTC (20:00 UTC+8)
   workflow_dispatch:
+  pull_request:
+    branches:
+      - 'main'
 
 jobs:
-  build:
+  prepare:
+    environment: ado-feed.mason-test-feed-in-personal-org
     permissions:
       id-token: write
     runs-on: ubuntu-latest
+    env:
+      AZURE_LOGIN_POST_CLEANUP: false # To let the token be available in other jobs in a GitHub workflow
+    outputs:
+      base64Token: ${{ steps.set-output.outputs.base64Token }}
 
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.1.7
+
+      - name: 'Az CLI login'
+        uses: azure/login@v2
+        with:
+          ## below ids can be stored as secrets.
+          client-id: c21c18b2-9047-4a39-a7af-216a1210f7e9
+          tenant-id: 72f988bf-86f1-41af-91ab-2d7cd011db47 # MSFT tenant
+          allow-no-subscriptions: true
+
+      # The access token with short expiration time, expires in about 24 hours.
+      # This token is read-only and can be used to authenticate with Azure Artifacts.
+      # The purpose is leverage the GitHub environment so that the github action has permission regardless of the branch,pullrequest,tag
+      # And also investigated that symmetric encryption is not easy to implement in GitHub Actions to share this token.
+      # Given the token is read-only, it is safe to be exposed in the GitHub environment.
+      - name: Authenticate with Azure Artifacts
+        id: set-output
+        shell: bash
+        run: |
+          token=$(az account get-access-token --query accessToken -o tsv)
+          echo "Print base64 token"
+          echo -n $token | base64 -w 0
+
+          base64Token=$(echo -n $token | base64 -w 0)
+          echo "base64Token=$base64Token" >> $GITHUB_OUTPUT
+
+  build:
+    needs: prepare
+    runs-on: ubuntu-latest
+    env:
+      SECRET_PASSPHRASE: ${{ secrets.SECRET_PASSPHRASE }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4.1.7
@@ -21,45 +62,37 @@ jobs:
           distribution: 'corretto'
           java-version: 17
 
-      - name: 'Az CLI login'
-        uses: azure/login@v2
-        with:
-          ## below ids can be stored as secrets.
-          client-id: c21c18b2-9047-4a39-a7af-216a1210f7e9
-          tenant-id: 72f988bf-86f1-41af-91ab-2d7cd011db47 # MSFT tenant
-          allow-no-subscriptions: true
-
-      # Get access token with short expiration time
-      - name: Authenticate with Azure Artifacts
-        shell: bash
+      - name: Prepare gradle.properties
         run: |
-          token=$(az account get-access-token --query accessToken -o tsv)
-          echo "Print base64 token"
+          base64Token="${{ needs.prepare.outputs.base64Token }}"
+          echo "base64Token=$base64Token"
+          token=$(echo -n $base64Token | base64 -d)
+          
           echo -n $token | base64 -w 0
 
           # Define the directory and file path
-          # GRADLE_DIR="$HOME/.gradle"
-          # PROPERTIES_FILE="$GRADLE_DIR/gradle.properties"
+          GRADLE_DIR="$HOME/.gradle"
+          PROPERTIES_FILE="$GRADLE_DIR/gradle.properties"
 
           # Check if the .gradle directory exists, if not, create it
-          if [ ! -d "$HOME/.gradle" ]; then
-            echo "$HOME/.gradle not exists, create it."
-            mkdir -p "$HOME/.gradle"
+          if [ ! -d "$GRADLE_DIR" ]; then
+            echo "$GRADLE_DIR not exists, create it."
+            mkdir -p "$GRADLE_DIR"
           fi
 
           # Check if the gradle.properties file exists, if not, create it
-          if [ ! -f "$HOME/.gradle/gradle.properties" ]; then
-            touch "$HOME/.gradle/gradle.properties"
-            echo "Created $HOME/.gradle/gradle.properties"
+          if [ ! -f "$PROPERTIES_FILE" ]; then
+            touch "$PROPERTIES_FILE"
+            echo "Created $PROPERTIES_FILE"
           else
-            echo "$HOME/.gradle/gradle.properties already exists"
+            echo "$PROPERTIES_FILE already exists"
           fi
 
-          cat $HOME/.gradle/gradle.properties
+          cat $PROPERTIES_FILE
 
-          echo "ado.artifacts.jiec-temp-org.mason-test-feed-in-personal-org.token=$token" >> $HOME/.gradle/gradle.properties
+          echo "ado.artifacts.jiec-temp-org.mason-test-feed-in-personal-org.token=$token" >> $PROPERTIES_FILE
 
-          cat $HOME/.gradle/gradle.properties
+          cat $PROPERTIES_FILE
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
