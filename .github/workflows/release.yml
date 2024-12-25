@@ -33,6 +33,9 @@ jobs:
 
       # The access token with short expiration time, expires in about 24 hours.
       # This token is read-only and can be used to authenticate with Azure Artifacts.
+      # The purpose is leverage the GitHub environment so that the github action has permission regardless of the branch,pullrequest,tag
+      # And also investigated that symmetric encryption is not easy to implement in GitHub Actions to share this token.
+      # Given the token is read-only, it is safe to be exposed in the GitHub environment.
       - name: Authenticate with Azure Artifacts
         id: set-output
         shell: bash
@@ -89,7 +92,7 @@ jobs:
 
           echo "ado.artifacts.jiec-temp-org.mason-test-feed-in-personal-org.token=$token" >> cat $PROPERTIES_FILE
 
-          cat cat $PROPERTIES_FILE
+          cat $PROPERTIES_FILE
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
