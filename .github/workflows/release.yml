@@ -75,6 +75,7 @@ jobs:
         run: pwd && ./gradlew build --info --stacktrace
 
   test:
+    runs-on: ubuntu-latest
     env:
       AZURE_LOGIN_POST_CLEANUP: true
     steps:
