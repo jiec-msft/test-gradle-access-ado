@@ -63,7 +63,7 @@ jobs:
         run: |
           base64Token="${{ needs.prepare.outputs.base64Token }}"
           echo "base64Token=$base64Token"
-          $token=$(echo -n $base64Token | base64 -d)
+          token=$(echo -n $base64Token | base64 -d)
           
           echo -n $token | base64 -w 0
 
