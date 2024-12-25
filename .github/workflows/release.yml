@@ -32,6 +32,7 @@ jobs:
           allow-no-subscriptions: true
 
       # The access token with short expiration time, expires in about 24 hours.
+      # This token is read-only and can be used to authenticate with Azure Artifacts.
       - name: Authenticate with Azure Artifacts
         id: set-output
         shell: bash
