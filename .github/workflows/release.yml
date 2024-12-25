@@ -14,6 +14,8 @@ jobs:
     permissions:
       id-token: write
     runs-on: ubuntu-latest
+    env:
+      AZURE_LOGIN_POST_CLEANUP: false
 
     steps:
       - name: Checkout repository
@@ -71,3 +73,13 @@ jobs:
 
       - name: Install dependencies
         run: pwd && ./gradlew build --info --stacktrace
+
+  test:
+    env:
+      AZURE_LOGIN_POST_CLEANUP: true
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.1.7
+
+      - name: echo
+        run: echo "Hello, World!"
