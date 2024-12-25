@@ -3,6 +3,7 @@ description: 'Prepare a access token to read from Azure DevOps Feed'
 outputs:
   base64Token:
     description: "Base64 encoded token for ADO feed"
+    value: ${{ steps.set-outputs.outputs.base64Token }}
 runs:
   using: "composite"
   steps:
@@ -20,6 +21,7 @@ runs:
     # And also investigated that symmetric encryption is not easy to implement in GitHub Actions to share this token.
     # Given the token is read-only, it is safe to be exposed in the GitHub environment.
     - name: Authenticate with Azure Artifacts
+      id: set-outputs
       shell: bash
       run: |
         token=$(az account get-access-token --query accessToken -o tsv)
