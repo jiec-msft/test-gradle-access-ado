@@ -6,7 +6,7 @@ inputs:
     description: 'The client id of the user-assigned managed identity'
     required: true
   tenant-id:
-    description: 'The tenant id that managed identity is going to sign-in from'
+    description: 'The tenant id that managed identity is going to sign-in against'
     default: '72f988bf-86f1-41af-91ab-2d7cd011db47' # MSFT Tenant
     required: false
 
