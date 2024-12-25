@@ -1,0 +1,33 @@
+name: shared_steps
+description: 'Prepare a access token to read from Azure DevOps Feed'
+outputs:
+  base64Token:
+    description: "Base64 encoded token for ADO feed"
+    value: ${{ steps.set-outputs.outputs.base64Token }}
+runs:
+  using: "composite"
+  steps:
+    - name: 'Az CLI login'
+      uses: azure/login@v2
+      with:
+        ## below ids can be stored as secrets.
+        client-id: c21c18b2-9047-4a39-a7af-216a1210f7e9
+        tenant-id: 72f988bf-86f1-41af-91ab-2d7cd011db47 # MSFT tenant
+        allow-no-subscriptions: true
+
+    # The access token with short expiration time, expires in about 24 hours.
+    # This token is read-only and can be used to authenticate with Azure Artifacts.
+    # The purpose is leverage the GitHub environment so that the github action has permission regardless of the branch,pullrequest,tag
+    # And also investigated that symmetric encryption is not easy to implement in GitHub Actions to share this token.
+    # Given the token is read-only, it is safe to be exposed in the GitHub environment.
+    - name: Authenticate with Azure Artifacts
+      id: set-outputs
+      shell: bash
+      run: |
+        token=$(az account get-access-token --query accessToken -o tsv)
+        echo "Print base64 token"
+        echo -n $token | base64 -w 0
+
+        base64Token=$(echo -n $token | base64 -w 0)
+        echo "base64Token=$base64Token" >> $GITHUB_OUTPUT
+        # echo "::set-output name=base64Token::$base64Token"
