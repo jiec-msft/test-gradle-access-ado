@@ -27,5 +27,5 @@ runs:
         echo -n $token | base64 -w 0
 
         base64Token=$(echo -n $token | base64 -w 0)
-        # echo "base64Token=$base64Token" >> $GITHUB_OUTPUT
-        echo "::set-output name=base64Token::$base64Token"
+        echo "base64Token=$base64Token" >> $GITHUB_OUTPUT
+        # echo "::set-output name=base64Token::$base64Token"
