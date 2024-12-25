@@ -23,9 +23,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4.1.7
 
+      # The access token with short expiration time, expires in about 24 hours.
+      # This token is read-only and can be used to authenticate with Azure Artifacts.
+      # The purpose is leverage the GitHub environment so that the github action has permission regardless of the branch,pullrequest,tag
+      # And also investigated that symmetric encryption is not easy to implement in GitHub Actions to share this token.
+      # Given the token is read-only, it is safe to be exposed in the GitHub environment.
       - name: Prepare ADO Feed read token
         id: prepare-ado-feed-token
-        uses: ./.github/actions/auth-ado-feed
+        uses: ./.github/actions/impersonate-managed-identity
+        with:
+            managed-identity-client-id: 'c21c18b2-9047-4a39-a7af-216a1210f7e9'
 
   build:
     needs: prepare
