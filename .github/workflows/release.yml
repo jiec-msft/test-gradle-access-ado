@@ -20,6 +20,9 @@ jobs:
       base64Token: ${{ steps.set-output.outputs.base64Token }}
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.1.7
+
       - name: Prepare ADO Feed read token
         uses: ./.github/actions/auth-ado-feed
 
