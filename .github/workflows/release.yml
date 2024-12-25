@@ -93,5 +93,9 @@ jobs:
         run: chmod +x gradlew
         shell: bash
 
+      - name: sleep
+        shell: bash
+        run: sleep 1000
+
       - name: Install dependencies
         run: pwd && ./gradlew build --info --stacktrace
