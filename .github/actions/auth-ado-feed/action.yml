@@ -1,5 +1,5 @@
 name: shared_steps
-description: 'Authenticate, build, and upload VSIX artifact'
+description: 'Prepare a access token to read from Azure DevOps Feed'
 
 runs:
   using: "composite"
@@ -18,7 +18,6 @@ runs:
     # And also investigated that symmetric encryption is not easy to implement in GitHub Actions to share this token.
     # Given the token is read-only, it is safe to be exposed in the GitHub environment.
     - name: Authenticate with Azure Artifacts
-      id: set-output
       shell: bash
       run: |
         token=$(az account get-access-token --query accessToken -o tsv)

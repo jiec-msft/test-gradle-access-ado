@@ -17,13 +17,14 @@ jobs:
     env:
       AZURE_LOGIN_POST_CLEANUP: false # To let the token be available in other jobs in a GitHub workflow
     outputs:
-      base64Token: ${{ steps.set-output.outputs.base64Token }}
+      base64Token: ${{ steps.prepare-ado-feed-token.outputs.base64Token }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4.1.7
 
       - name: Prepare ADO Feed read token
+        id: prepare-ado-feed-token
         uses: ./.github/actions/auth-ado-feed
 
   build:
