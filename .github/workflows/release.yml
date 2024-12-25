@@ -25,7 +25,7 @@ jobs:
 
       - name: Prepare ADO Feed read token
         id: prepare-ado-feed-token
-        uses: ./.github/actions/auth-ado-feed
+        uses: ./.github/actions/auth-ado-feed/action.yml
 
   build:
     needs: prepare
