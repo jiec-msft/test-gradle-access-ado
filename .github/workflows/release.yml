@@ -21,33 +21,33 @@ jobs:
           distribution: 'corretto'
           java-version: 17
 
-      - name: 'Prepare token'
-        shell: bash
-        env:
-          TOKEN: ${{ secrets.MASON_PAT }}
-        run: |
-          # Define the directory and file path
-          GRADLE_DIR="$HOME/.gradle"
-          PROPERTIES_FILE="$GRADLE_DIR/gradle.properties"
-
-          # Check if the .gradle directory exists, if not, create it
-          if [ ! -d "$HOME/.gradle" ]; then
-            mkdir -p "$HOME/.gradle"
-          fi
-
-          # Check if the gradle.properties file exists, if not, create it
-          if [ ! -f "$HOME/.gradle/gradle.properties" ]; then
-            touch "$HOME/.gradle/gradle.properties"
-            echo "Created $HOME/.gradle/gradle.properties"
-          else
-            echo "$HOME/.gradle/gradle.properties already exists"
-          fi
-
-          cat $HOME/.gradle/gradle.properties
-
-          echo "ado.artifacts.jiec-temp-org.mason-test-feed-in-personal-org.token=$TOKEN" >> $HOME/.gradle/gradle.properties
-
-          cat $HOME/.gradle/gradle.properties
+#      - name: 'Prepare token'
+#        shell: bash
+#        env:
+#          TOKEN: ${{ secrets.MASON_PAT }}
+#        run: |
+#          # Define the directory and file path
+#          GRADLE_DIR="$HOME/.gradle"
+#          PROPERTIES_FILE="$GRADLE_DIR/gradle.properties"
+#
+#          # Check if the .gradle directory exists, if not, create it
+#          if [ ! -d "$HOME/.gradle" ]; then
+#            mkdir -p "$HOME/.gradle"
+#          fi
+#
+#          # Check if the gradle.properties file exists, if not, create it
+#          if [ ! -f "$HOME/.gradle/gradle.properties" ]; then
+#            touch "$HOME/.gradle/gradle.properties"
+#            echo "Created $HOME/.gradle/gradle.properties"
+#          else
+#            echo "$HOME/.gradle/gradle.properties already exists"
+#          fi
+#
+#          cat $HOME/.gradle/gradle.properties
+#
+#          echo "ado.artifacts.jiec-temp-org.mason-test-feed-in-personal-org.token=$TOKEN" >> $HOME/.gradle/gradle.properties
+#
+#          cat $HOME/.gradle/gradle.properties
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -70,7 +70,7 @@ jobs:
         run: |
           token=$(az account get-access-token --query accessToken -o tsv)
           echo "Print base64 token"
-          echo -n $token | base64
+          echo -n $token | base64 -w 0
 
           # Define the directory and file path
           # GRADLE_DIR="$HOME/.gradle"
