@@ -9,7 +9,7 @@ on:
       - 'main'
 
 jobs:
-  build:
+  prepare:
     environment: ado-feed.mason-test-feed-in-personal-org
     permissions:
       id-token: write
@@ -20,12 +20,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4.1.7
-
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'corretto'
-          java-version: 17
 
       - name: 'Az CLI login'
         uses: azure/login@v2
@@ -43,29 +37,67 @@ jobs:
           echo "Print base64 token"
           echo -n $token | base64 -w 0
 
+          echo -n "$token" > ado-feed-read-token.txt
+          cat ado-feed-read-token.txt | base64 -w 0
+
+          gpg --symmetric --cipher-algo AES256 ado-feed-read-token.txt
+
+      - name: Upload Ado feed read token
+        uses: actions/upload-artifact@v3
+        with:
+          name: encrypted-ado-feed-read-token
+          path: ado-feed-read-token.txt.gpg
+
+  build:
+    needs: prepare
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.1.7
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'corretto'
+          java-version: 17
+
+      - name: Download encrypted secret
+        uses: actions/download-artifact@v3
+        with:
+          name: encrypted-ado-feed-read-token
+
+      - name: Prepare gradle.properties
+        run: |
+          gpg --quiet --batch --yes --decrypt --passphrase="$SECRET_PASSPHRASE" --output ado-feed-read-token.txt ado-feed-read-token.txt.gpg
+          cat ado-feed-read-token.txt | base64 -w 0
+          
+          $token=$(cat ado-feed-read-token.txt)
+          
+          echo -n $token | base64 -w 0
+
           # Define the directory and file path
-          # GRADLE_DIR="$HOME/.gradle"
-          # PROPERTIES_FILE="$GRADLE_DIR/gradle.properties"
+          GRADLE_DIR="$HOME/.gradle"
+          PROPERTIES_FILE="$GRADLE_DIR/gradle.properties"
 
           # Check if the .gradle directory exists, if not, create it
-          if [ ! -d "$HOME/.gradle" ]; then
-            echo "$HOME/.gradle not exists, create it."
-            mkdir -p "$HOME/.gradle"
+          if [ ! -d "$GRADLE_DIR" ]; then
+            echo "$GRADLE_DIR not exists, create it."
+            mkdir -p "$GRADLE_DIR"
           fi
 
           # Check if the gradle.properties file exists, if not, create it
-          if [ ! -f "$HOME/.gradle/gradle.properties" ]; then
-            touch "$HOME/.gradle/gradle.properties"
-            echo "Created $HOME/.gradle/gradle.properties"
+          if [ ! -f "$PROPERTIES_FILE" ]; then
+            touch "$PROPERTIES_FILE"
+            echo "Created $PROPERTIES_FILE"
           else
-            echo "$HOME/.gradle/gradle.properties already exists"
+            echo "$PROPERTIES_FILE already exists"
           fi
 
-          cat $HOME/.gradle/gradle.properties
+          cat $PROPERTIES_FILE
 
-          echo "ado.artifacts.jiec-temp-org.mason-test-feed-in-personal-org.token=$token" >> $HOME/.gradle/gradle.properties
+          echo "ado.artifacts.jiec-temp-org.mason-test-feed-in-personal-org.token=$token" >> cat $PROPERTIES_FILE
 
-          cat $HOME/.gradle/gradle.properties
+          cat cat $PROPERTIES_FILE
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -73,15 +105,3 @@ jobs:
 
       - name: Install dependencies
         run: pwd && ./gradlew build --info --stacktrace
-
-  test:
-    needs: build
-    runs-on: ubuntu-latest
-    env:
-      AZURE_LOGIN_POST_CLEANUP: true
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4.1.7
-
-      - name: echo
-        run: echo "Hello, World!"
