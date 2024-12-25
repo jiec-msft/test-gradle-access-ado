@@ -49,13 +49,6 @@ jobs:
 #
 #          cat $HOME/.gradle/gradle.properties
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-        shell: bash
-
-      - name: Install dependencies
-        run: pwd && ./gradlew build --debug --stacktrace
-
       - name: 'Az CLI login'
         uses: azure/login@v2
         with:
@@ -96,5 +89,9 @@ jobs:
 
           cat $HOME/.gradle/gradle.properties
 
-      - name: Install dependencies again
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+        shell: bash
+
+      - name: Install dependencies
         run: pwd && ./gradlew build --info --stacktrace
