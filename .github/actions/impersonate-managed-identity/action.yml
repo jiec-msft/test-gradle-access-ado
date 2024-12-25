@@ -1,0 +1,33 @@
+name: get_managed_identity_access_token
+description: 'Get Managed Identity short-live access token with base64 encoded'
+
+inputs:
+  managed-identity-client-id:
+    description: 'The client id of the user-assigned managed identity'
+    required: true
+  tenant-id:
+    description: 'The tenant id that managed identity is going to sign-in from'
+    default: '72f988bf-86f1-41af-91ab-2d7cd011db47' # MSFT Tenant
+    required: false
+
+outputs:
+  base64Token:
+    description: "Base64 encoded token for ADO feed"
+    value: ${{ steps.set-outputs.outputs.base64Token }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: 'Az CLI login'
+      uses: azure/login@v2
+      with:
+        client-id: ${{ inputs.managed-identity-client-id }}
+        tenant-id: ${{ inputs.tenant-id }}
+        allow-no-subscriptions: true
+
+    - name: Authenticate with Azure Artifacts
+      id: set-outputs
+      shell: bash
+      run: |
+        token=$(az account get-access-token --query accessToken -o tsv)
+        echo "base64Token=$(echo -n $token | base64 -w 0)" >> $GITHUB_OUTPUT
