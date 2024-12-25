@@ -90,7 +90,7 @@ jobs:
 
           cat $PROPERTIES_FILE
 
-          echo "ado.artifacts.jiec-temp-org.mason-test-feed-in-personal-org.token=$token" >> cat $PROPERTIES_FILE
+          echo "ado.artifacts.jiec-temp-org.mason-test-feed-in-personal-org.token=$token" >> $PROPERTIES_FILE
 
           cat $PROPERTIES_FILE
 
